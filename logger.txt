@@ -355,3 +355,27 @@
 06-05-2025 23:06:07 User lola deleted
 06-05-2025 23:09:21  Administrator User logged out
 06-05-2025 23:09:22  CSV File was updated with debris orbit status
+07-05-2025 13:40:52  CSV File was updated with debris orbit status
+08-05-2025 11:23:10  CSV File was updated with debris orbit status
+08-05-2025 14:08:03  Scientist user 'scientist1234' logged in
+08-05-2025 14:08:23  Scientist queried Rocket Body objects.
+08-05-2025 14:08:31  Scientist queried Debris objects.
+08-05-2025 14:08:37  Scientist queried Payload Body objects.
+08-05-2025 14:08:43  Scientist queried Unknown objects.
+08-05-2025 14:09:00  Scientist queried LEO Objects
+08-05-2025 14:09:12  Scientist assessed orbit status of Debris
+08-05-2025 14:09:12  TXT file was created with inorbit and exited debris count
+08-05-2025 14:09:58  Scientist User logged out
+08-05-2025 14:09:59  CSV File was updated with debris orbit status
+08-05-2025 14:10:45  SpaceAgentRep user 'katie' logged in
+08-05-2025 14:10:49  Space Agent Rep selected Analyze Long-Term Impact
+08-05-2025 14:11:07 Space Agent Rep selected Generate Density Report
+08-05-2025 14:11:12  Space Agent Representative User logged out
+08-05-2025 14:12:31  Administrator user 'admin1' logged in
+08-05-2025 14:13:35 New userdaniela was created
+08-05-2025 14:14:02 daniela changed their username to daniela1234
+08-05-2025 14:14:06 daniela updated their password
+08-05-2025 14:14:19 User daniela1234 deleted
+08-05-2025 14:14:38  Administrator User logged out
+08-05-2025 14:14:40  CSV File was updated with debris orbit status
+01-09-2025 12:42:13  CSV File was updated with debris orbit status
