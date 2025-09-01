@@ -1,4 +1,0 @@
-class PolicyMaker extends User{
-
-    
-}

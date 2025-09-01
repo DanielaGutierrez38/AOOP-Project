@@ -1,92 +1,113 @@
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Arrays;
+import java.util.*;
 
 /**
  * Builds a dictionary of SpaceObject instances from a 2D array.
- * This includes Debris, Satellite, RocketBody, Payload, and UnknownObject.
- * <p>
- * The dictionary is keyed by the unique record ID for each space object.
- * </p>
+ * Supports Debris, Satellite, RocketBody, Payload, and UnknownObject.
  * 
  * @author Caitlin Gregory
  * @author Daniela Gutierrez
  */
 public class DictionaryBuilder {
 
+    /**Default constructor */
+    DictionaryBuilder(){}
+
     /**
-     * Parses the 2D array and constructs appropriate SpaceObject subclasses
-     * based on the objectType field. Returns a map of recordId → SpaceObject.
-     *
-     * @param data 2D array of CSV data rows split into fields
-     * @return Map of SpaceObject instances keyed by record ID
+     * Converts CSV lines into a dictionary of SpaceObjects.
+     * 
+     * @param data the raw CSV lines (excluding the header)
+     * @param columnIndex ßthe map of header column names to their indices
+     * @return a map of SpaceObjects indexed by record ID
      */
-    public static Map<String, SpaceObject> buildFromArray(String[][] data) {
-        Map<String, SpaceObject> spaceMap = new LinkedHashMap<>();
+    public static Map<String, SpaceObject> toArrayAndForward(String[][] data, Map<String, Integer> columnIndex) {
+        Map<String, SpaceObject> objectMap = new LinkedHashMap<>();
 
         for (String[] fields : data) {
+            if (fields.length < columnIndex.size()) {
+                System.out.println("[WARNING] Skipping misaligned row: " + Arrays.toString(fields));
+                continue;
+            }
+
             try {
-                // Common field parsing
-                String recordId = fields[0];
-                String satelliteName = fields[2];
-                String country = fields[3];
-                String orbitType = fields[4];
-                String objectType = fields[5];
-                int launchYear = fields[6].isEmpty() ? 0 : Integer.parseInt(fields[6]);
-                String launchSite = fields[7];
-                double longitude = fields[8].isEmpty() ? 0.0 : Double.parseDouble(fields[8]);
-                double avgLongitude = fields[9].isEmpty() ? 0.0 : Double.parseDouble(fields[9]);
-                String geohash = fields[10] + ", " + fields[11];
+                String id = fields[columnIndex.get("record_id")];
+                String orbit = fields[columnIndex.get("approximate_orbit_type")];
+                String objType = fields[columnIndex.get("object_type")];
+                String name = fields[columnIndex.get("satellite_name")];
+                String country = fields[columnIndex.get("country")];
+                String launchSite = fields[columnIndex.get("launch_site")];
+                int launchYear = parseIntSafe(fields[columnIndex.get("launch_year")]);
+                double longitude = parseDoubleSafe(fields[columnIndex.get("longitude")]);
+                double avgLongitude = parseDoubleSafe(fields[columnIndex.get("avg_longitude")]);
+                int daysOld = parseIntSafe(fields[columnIndex.get("days_old")]);
+                int conjunctions = parseIntSafe(fields[columnIndex.get("conjunction_count")]);
 
-                // Optional/defensive field parsing
-                String hrrCategory = (fields.length > 12 && !fields[12].isEmpty()) ? fields[12] : "N/A";
-                boolean isNominated = (fields.length > 13 && fields[13].equalsIgnoreCase("true"));
-                boolean hasDossier = (fields.length > 15 && fields[15].equalsIgnoreCase("true"));
-                boolean isUnknownObject = (fields.length > 17 && fields[17].equalsIgnoreCase("true"));
-                int daysOld = (fields.length > 19 && !fields[19].isEmpty() && fields[19].matches("\\d+"))
-                                ? Integer.parseInt(fields[19]) : 0;
+                SpaceObject obj = SpaceObjectFactory.create(
+                    objType,
+                    id,
+                    name,
+                    country,
+                    orbit,
+                    launchYear,
+                    launchSite,
+                    longitude,
+                    avgLongitude,
+                    "", "", false, false, false,
+                    daysOld, conjunctions
+                );
 
-                // Instantiate the appropriate subclass based on objectType
-                SpaceObject obj;
-
-                switch (objectType.toLowerCase()) {
-                    case "debris":
-                        obj = new Debris(recordId, satelliteName, country, orbitType, launchYear,
-                                launchSite, longitude, avgLongitude, geohash, hrrCategory,
-                                isNominated, hasDossier, isUnknownObject, daysOld);
-                        break;
-                    case "satellite":
-                        obj = new Satellite(recordId, satelliteName, country, orbitType, launchYear,
-                                launchSite, longitude, avgLongitude, geohash, hrrCategory,
-                                isNominated, hasDossier, isUnknownObject, daysOld);
-                        break;
-                    case "rocket body":
-                        obj = new RocketBody(recordId, satelliteName, country, orbitType, launchYear,
-                                launchSite, longitude, avgLongitude, geohash, hrrCategory,
-                                isNominated, hasDossier, isUnknownObject, daysOld);
-                        break;
-                    case "payload":
-                        obj = new Payload(recordId, satelliteName, country, orbitType, launchYear,
-                                launchSite, longitude, avgLongitude, geohash, hrrCategory,
-                                isNominated, hasDossier, isUnknownObject, daysOld);
-                        break;
-                    case "unknown":
-                        obj = new UnknownObject(recordId, satelliteName, country, orbitType, launchYear,
-                                launchSite, longitude, avgLongitude, geohash, hrrCategory,
-                                isNominated, hasDossier, isUnknownObject, daysOld);
-                        break;
-                    default:
-                        System.out.println("Unknown object type: " + objectType + " for record: " + recordId);
-                        continue;  // Skip unknown types
-                }
-
-                spaceMap.put(recordId, obj);  // Store parsed object
+                objectMap.put(id, obj);
 
             } catch (Exception e) {
-                System.out.println("Error parsing row [" + Arrays.toString(fields) + "]: " + e.getMessage());
+                System.out.println("[ERROR] Failed to parse row: " + Arrays.toString(fields));
+                e.printStackTrace();
             }
         }
 
-        return spaceMap;
+        return objectMap;
+    }
+
+    /** Parses an integer safely with fallback to 0 
+     * @param val value to parse
+    */
+    private static int parseIntSafe(String val){
+        try {
+            return Integer.parseInt(val.trim());
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    /** Parses a double safely with fallback to 0.0 
+     * @param val value to parse
+    */
+    private static double parseDoubleSafe(String val){
+        try {
+            return Double.parseDouble(val.trim());
+        } catch (Exception e) {
+            return 0.0;
+        }
+    }
+
+    /** Splits a CSV line respecting quoted commas 
+     * @param line line to split
+     * @return String array
+    */
+    public static String[] smartSplit(String line){
+        List<String> tokens = new ArrayList<>();
+        boolean inQuotes = false;
+        StringBuilder sb = new StringBuilder();
+
+        for (char c : line.toCharArray()) {
+            if (c == '"') {
+                inQuotes = !inQuotes;
+            } else if (c == ',' && !inQuotes) {
+                tokens.add(sb.toString().trim());
+                sb.setLength(0);
+            } else {
+                sb.append(c);
+            }
+        }
+        tokens.add(sb.toString().trim());
+        return tokens.toArray(new String[0]);
     }
 }
